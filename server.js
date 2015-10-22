@@ -2,50 +2,37 @@ var express = require('express'),
     app = express(),
     path = require('path'),
     http = require('http').Server(app),
-    io = require('socket.io')(http),
-    feed = require('./feed');
+    io = require('socket.io')(http);
 
 app.use(express.static(path.join(__dirname, './www')));
 
-app.get('/lol', function(req, res){
-  io.emit('messages', ['messages is a lie']);
-  res.send('hello world is a lie');
+var messages = [];
+
+app.get('/send', function(req, res){
+    var msg = req.param('text');
+    messages.push(msg);
+    io.emit('messages', messages);
+    res.send('thanks for sharing: '+msg);
 });
+
+app.get('/random', function(req, res){
+    var msg = Math.random().toString();
+    messages.push(msg);
+    io.emit('messages', messages);
+    res.send('thanks for sharing: '+msg);
+});
+
 
 io.on('connection', function (socket) {
     console.log('User connected. Socket id %s', socket.id);
-
-    socket.on('join', function (rooms) {
-        console.log('Socket %s subscribed to %s', socket.id, rooms);
-        if (Array.isArray(rooms)) {
-            rooms.forEach(function(room) {
-                socket.join(room);
-            });
-        } else {
-            socket.join(rooms);
-        }
-    });
-
-    socket.on('leave', function (rooms) {
-        console.log('Socket %s unsubscribed from %s', socket.id, rooms);
-        if (Array.isArray(rooms)) {
-            rooms.forEach(function(room) {
-                socket.leave(room);
-            });
-        } else {
-            socket.leave(rooms);
-        }
-    });
-
+    io.emit('messages', messages);
     socket.on('disconnect', function () {
         console.log('User disconnected. %s. Socket id %s', socket.id);
     });
 });
 
-feed.start(function(message) {
-    io.emit('messages', message);
-});
+var PORT = 80;
 
-http.listen(3000, function () {
-    console.log('listening on: 3000');
+http.listen(PORT, '0.0.0.0', function () {
+    console.log('listening on: 0.0.0.0:'+PORT);
 });
