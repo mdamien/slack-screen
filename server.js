@@ -7,6 +7,11 @@ var express = require('express'),
 
 app.use(express.static(path.join(__dirname, './www')));
 
+app.get('/lol', function(req, res){
+  io.emit('messages', ['messages is a lie']);
+  res.send('hello world is a lie');
+});
+
 io.on('connection', function (socket) {
     console.log('User connected. Socket id %s', socket.id);
 
@@ -37,8 +42,8 @@ io.on('connection', function (socket) {
     });
 });
 
-feed.start(function(room, type, message) {
-    io.to(room).emit(type, message);
+feed.start(function(message) {
+    io.emit('messages', message);
 });
 
 http.listen(3000, function () {

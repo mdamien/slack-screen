@@ -4,14 +4,8 @@ feed = (function () {
 
     return {
         onChange: function(callback) {
-            socket.on('stock', callback);
+            socket.on('messages', callback);
         },
-        watch: function(symbols) {
-            socket.emit('join', symbols);
-        },
-        unwatch: function(symbol) {
-            socket.emit('leave', symbol);
-        }
     };
 
 }());
